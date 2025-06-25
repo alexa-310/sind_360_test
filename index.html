@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>360° Prikaz sa kontrolama i touch podrškom</title>
+  <style>
+    body {
+      background: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    #viewer {
+  width: 600px;
+  height: 600px;
+  margin: 20px auto;
+  position: relative;
+  touch-action: pan-y;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f8f8;
+}
+
+    #viewer img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+    .controls {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 8px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>360° Prikaz proizvoda</h1>
+
+  <div id="viewer">
+    <img id="productImage" src="images/1.png" alt="360 view">
+    <div class="controls">
+      <button onclick="previousFrame()">⬅️</button>
+      <button onclick="toggleRotation()" id="playBtn">▶️ Play</button>
+      <button onclick="nextFrame()">➡️</button>
+    </div>
+  </div>
+
+  <script>
+    const totalFrames = 35;
+    let currentFrame = 1;
+    const image = document.getElementById('productImage');
+
+    let isDragging = false;
+    let startX = 0;
+
+    // Mouse Events
+    document.getElementById('viewer').addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const delta = e.clientX - startX;
+        if (Math.abs(delta) > 5) {
+          updateImage(delta > 0 ? 1 : -1);
+          startX = e.clientX;
+        }
+      }
+    });
+
+    // Touch Events
+    let touchStartX = 0;
+    document.getElementById('viewer').addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    });
+
+    document.getElementById('viewer').addEventListener('touchmove', (e) => {
+      const touchX = e.touches[0].clientX;
+      const delta = touchX - touchStartX;
+      if (Math.abs(delta) > 5) {
+        updateImage(delta > 0 ? 1 : -1);
+        touchStartX = touchX;
+      }
+    });
+
+    function updateImage(delta) {
+      currentFrame += delta;
+      if (currentFrame > totalFrames) currentFrame = 1;
+      if (currentFrame < 1) currentFrame = totalFrames;
+      image.src = `images/${currentFrame}.png`;
+    }
+
+    function previousFrame() {
+      updateImage(-1);
+    }
+
+    function nextFrame() {
+      updateImage(1);
+    }
+
+    let autoRotate = false;
+    let interval = null;
+
+    function toggleRotation() {
+      autoRotate = !autoRotate;
+      const playBtn = document.getElementById('playBtn');
+
+      if (autoRotate) {
+        playBtn.textContent = '⏸️ Pause';
+        interval = setInterval(() => {
+          updateImage(1);
+        }, 100); // Adjust speed here
+      } else {
+        playBtn.textContent = '▶️ Play';
+        clearInterval(interval);
+      }
+    }
+  </script>
+
+</body>
+</html>
